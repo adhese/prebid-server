@@ -63,15 +63,21 @@ jobs:
       - name: Add Coverage Summary To Pull Request
         if: steps.commit_coverage.outputs.remote_coverage_preview_dir != ''
         uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ steps.pr_metadata.outputs.head_sha }}
+          COVERAGE_DIR: ${{ steps.pr_metadata.outputs.coverage_dir }}
+          REMOTE_COVERAGE_DIR: ${{ steps.commit_coverage.outputs.remote_coverage_preview_dir }}
+          PR_NUMBER: ${{ steps.pr_metadata.outputs.pr_number }}
+          ADAPTER_DIRECTORIES: ${{ steps.pr_metadata.outputs.directories }}
         with:
           script: |
             const utils = require('./.github/workflows/helpers/pull-request-utils.js')
             const helper = utils.coverageHelper({
               github, context,
-              headSha: '${{ steps.pr_metadata.outputs.head_sha }}', 
-              tmpCoverageDir: '${{ steps.pr_metadata.outputs.coverage_dir }}', 
-              remoteCoverageDir: '${{ steps.commit_coverage.outputs.remote_coverage_preview_dir }}',
-              prNumber: ${{ steps.pr_metadata.outputs.pr_number }}
+              headSha: process.env.HEAD_SHA,
+              tmpCoverageDir: process.env.COVERAGE_DIR,
+              remoteCoverageDir: process.env.REMOTE_COVERAGE_DIR,
+              prNumber: parseInt(process.env.PR_NUMBER, 10)
             })
-            const adapterDirectories = JSON.parse('${{ steps.pr_metadata.outputs.directories }}')
+            const adapterDirectories = JSON.parse(process.env.ADAPTER_DIRECTORIES)
             await helper.AddCoverageSummary(adapterDirectories)
