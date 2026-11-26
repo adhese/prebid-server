@@ -20,5 +20,7 @@ on:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Publish to docker Hub
         if: steps.login.outcome == 'success'
+        env:
+          IMAGE_TO_PUBLISH: ${{ inputs.imageToPublish }}
         run: |
-          docker push docker.io/prebid/prebid-server:${{ inputs.imageToPublish }}
+          docker push "docker.io/prebid/prebid-server:${IMAGE_TO_PUBLISH}"
